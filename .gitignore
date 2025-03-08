@@ -1,3 +1,11 @@
+.vscode/
+
+out/
+build/
+bin/
+bin-int/
+
+
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
