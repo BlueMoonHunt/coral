@@ -1,32 +1,34 @@
 #pragma once
 #include "base.hpp"
 #include <memory>
+#include "window.hpp"
 
 struct GLFWwindow;
 
 namespace coral {
     class Renderer;
 
-    struct ApplicationProperties {
-        const char* name = "";
-        ivec2 layout = { 100,100 };
-        FLAG applicationFlags = CoralApplicationFlag_None;
+    struct ApplicationSpecifications {
+        const char* name = "CORAL APP";
+        ivec2 windowsize = { 100,100 };
+        FLAG windowFlags = CoralWindowFlag_None;
     };
 
     class Application {
     public:
-        Application(const ApplicationProperties& props);
+        Application(const ApplicationSpecifications& specs);
         ~Application();
 
         inline static Application* Get() { return s_Instance; }
-        ApplicationProperties& getProperties() { return properties; }
+        ApplicationSpecifications& getProperties() { return specs; }
+        Window getWindow() { return window; }
         void run();
     private:
         void initCallbacks();
     private:
-        ApplicationProperties properties;
-        std::shared_ptr<Renderer> renderer;
-        GLFWwindow* window;
         static Application* s_Instance;
+        ApplicationSpecifications specs;
+        Window window;
+        std::shared_ptr<Renderer> renderer;
     };
 } // namespace coral
