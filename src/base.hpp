@@ -1,8 +1,29 @@
 #pragma once
 #include <memory>
 #include <array>
+#include <string>
+#include <print>
 
-// math implementation
+enum class LogLevel {
+    INFO = 0,
+    TRACE,
+    WARNING,
+    ERROR,
+    FETAL,
+};
+
+const char* getLogLevelName(LogLevel level);
+
+#ifdef NDEBUG
+#define CORAL_LOG(expr, logLevel) {expr;}
+#else
+#define CORAL_LOG(expr, logLevel) {\
+    LogLevel level = logLevel;\
+    std::println("{}: {}", getLogLevelName(level), #expr, __FILE__, __LINE__);\
+    if(level == LogLevel::FETAL)\
+    exit(EXIT_FAILURE);\
+}
+#endif
 
 template<typename T>
 struct Vec2 {
@@ -35,14 +56,12 @@ using uvec2 = Vec2<uint32_t>;
 using uvec3 = Vec3<uint32_t>;
 using uvec4 = Vec4<uint32_t>;
 
-enum CoralApplicationFlag {
-    CoralApplicationFlag_None = 0,
-    CoralApplicationFlag_Fullscreen = 1 << 0,
-    CoralApplicationFlag_Iconified = 1 << 1,
-    CoralApplicationFlag_Resizable = 1 << 2,
-    CoralApplicationFlag_NoBorder = 1 << 3,
-    CoralApplicationFlag_Debug = 1 << 4,
-
+enum CoralWindowFlag {
+    CoralWindowFlag_None = 0,
+    CoralWindowFlag_Fullscreen = 1 << 0,
+    CoralWindowFlag_Iconified = 1 << 1,
+    CoralWindowFlag_Resizable = 1 << 2,
+    CoralWindowFlag_NoBorder = 1 << 3,
 };
 
 enum CoralRendererFlag {
