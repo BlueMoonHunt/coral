@@ -1,4 +1,4 @@
-#include "application.hpp"
+#include "core/application.hpp"
 
 int main() {
     coral::Application* app = new coral::Application(coral::ApplicationProperties{

@@ -4,7 +4,7 @@
 #include <vector>
 #include <print>
 
-#include "application.hpp"
+#include "core/application.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -31,41 +31,30 @@ namespace coral {
         selectQueueFamily();
         createDevice();
         getQueue();
+
+        VkSurfaceFormatKHR surfaceFormat = getSurfaceFormat();
+        VkPresentModeKHR presentMode = getPresentMode();
+
+        createSwapchain(surfaceFormat, presentMode);
+        createImageView(surfaceFormat);
     }
 
     void Renderer::shutdown() {
-        for (uint32_t i = 0; i < swapChainImageCount; ++i) {
-            vkDestroyImageView(device, swapChainImageViews[i], allocator);
+        for (uint32_t i = 0; i < swapchain.imageCount; ++i) {
+            vkDestroyImageView(device, swapchain.imageViews[i], allocator);
         }
 
-        vkDestroySwapchainKHR(device, swapchain, allocator);
+        swapchain.imageViews.clear();
+        swapchain.images.clear();
+
+        vkDestroySwapchainKHR(device, swapchain.handle, allocator);
         vkDestroyDevice(device, allocator);
-        vkDestroySurfaceKHR(instance, swapchainSurface, allocator);
+        vkDestroySurfaceKHR(instance, swapchain.surface, allocator);
         vkDestroyInstance(instance, allocator);
     }
 
     void Renderer::beginFrame() {
         glfwPollEvents();
-        if (properties.flags & CoralRendererFlag_RecreateSwapChain) {
-            properties.flags ^= CoralRendererFlag_RecreateSwapChain;
-            VkSurfaceFormatKHR surfaceFormat = getSurfaceFormat();
-            VkPresentModeKHR presentMode = getPresentMode();
-            createSwapchain(surfaceFormat, presentMode);
-            createImageView(surfaceFormat);
-        }
-        // uint32_t imageIndex;
-        // VK_CHECK(vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, NULL, NULL, &imageIndex));
-
-        // VkPresentInfoKHR presentInfo{
-        //     .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-        //     .swapchainCount = 1,
-        //     .pSwapchains = &swapchain,
-        //     .pImageIndices = &imageIndex,
-        // };
-
-        // VkResult result = vkQueuePresentKHR(queue, &presentInfo);
-        // if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-        //     properties.flags |= CoralRendererFlag_RecreateSwapChain;
     }
 
     void Renderer::endFrame() {
@@ -108,7 +97,7 @@ namespace coral {
     }
 
     void Renderer::createSurface(GLFWwindow* window) {
-        VK_CHECK(glfwCreateWindowSurface(instance, window, allocator, &swapchainSurface));
+        VK_CHECK(glfwCreateWindowSurface(instance, window, allocator, &swapchain.surface));
     }
 
     void Renderer::selectQueueFamily() {
@@ -165,10 +154,10 @@ namespace coral {
 
     VkSurfaceFormatKHR Renderer::getSurfaceFormat() {
         uint32_t formatCount;
-        VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, swapchainSurface, &formatCount, nullptr));
+        VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, swapchain.surface, &formatCount, nullptr));
         std::vector<VkSurfaceFormatKHR> surfaceFormats;
         surfaceFormats.resize(formatCount * sizeof(VkSurfaceFormatKHR));
-        VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, swapchainSurface, &formatCount, surfaceFormats.data()));
+        VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, swapchain.surface, &formatCount, surfaceFormats.data()));
 
         for (auto format : surfaceFormats)
             if (format.colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR && format.format == VK_FORMAT_B8G8R8A8_SRGB)
@@ -179,10 +168,10 @@ namespace coral {
 
     VkPresentModeKHR Renderer::getPresentMode() {
         uint32_t presentModeCount;
-        VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, swapchainSurface, &presentModeCount, nullptr));
+        VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, swapchain.surface, &presentModeCount, nullptr));
         std::vector<VkPresentModeKHR> presentModes;
         presentModes.resize(presentModeCount * sizeof(VkPresentModeKHR));
-        VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, swapchainSurface, &presentModeCount, presentModes.data()));
+        VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, swapchain.surface, &presentModeCount, presentModes.data()));
 
 
         VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;;
@@ -194,18 +183,16 @@ namespace coral {
         return presentMode;
     }
 
-    void Renderer::createSwapchain(VkSurfaceFormatKHR surfaceFormat, VkPresentModeKHR presentMode) {
+    void Renderer::createSwapchain(VkSurfaceFormatKHR& surfaceFormat, VkPresentModeKHR& presentMode) {
 
         VkSurfaceCapabilitiesKHR capabilities;
-        VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, swapchainSurface, &capabilities));
-
-        VkSwapchainKHR oldSwapchain;
+        VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, swapchain.surface, &capabilities));
 
         const VkSwapchainCreateInfoKHR swapchainInfo{
             .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
             .pNext = nullptr,
             .flags = 0,
-            .surface = swapchainSurface,
+            .surface = swapchain.surface,
             .minImageCount = std::clamp(3u, capabilities.minImageCount, capabilities.maxImageCount),
             .imageFormat = surfaceFormat.format,
             .imageColorSpace = surfaceFormat.colorSpace,
@@ -222,29 +209,23 @@ namespace coral {
             .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
             .presentMode = presentMode,
             .clipped = true,
-            .oldSwapchain = swapchain,
         };
 
-        VK_CHECK(vkCreateSwapchainKHR(device, &swapchainInfo, allocator, &oldSwapchain));
-        vkDestroySwapchainKHR(device, swapchain, allocator);
-        swapchain = oldSwapchain;
+        VK_CHECK(vkCreateSwapchainKHR(device, &swapchainInfo, allocator, &swapchain.handle));
     }
 
-    void Renderer::createImageView(VkSurfaceFormatKHR surfaceFormat) {
-        swapChainImages.clear();
-        swapChainImageViews.clear();
+    void Renderer::createImageView(VkSurfaceFormatKHR& surfaceFormat) {
+        VK_CHECK(vkGetSwapchainImagesKHR(device, swapchain.handle, &swapchain.imageCount, nullptr));
+        swapchain.images.resize(swapchain.imageCount * sizeof(VkImage));
+        VK_CHECK(vkGetSwapchainImagesKHR(device, swapchain.handle, &swapchain.imageCount, swapchain.images.data()));
+        swapchain.imageViews.resize(swapchain.imageCount * sizeof(VkImageView));
 
-        VK_CHECK(vkGetSwapchainImagesKHR(device, swapchain, &swapChainImageCount, nullptr));
-        swapChainImages.resize(swapChainImageCount * sizeof(VkImage));
-        VK_CHECK(vkGetSwapchainImagesKHR(device, swapchain, &swapChainImageCount, swapChainImages.data()));
-        swapChainImageViews.resize(swapChainImageCount * sizeof(VkImageView));
-
-        for (uint32_t i = 0; i < swapChainImageCount; ++i) {
+        for (uint32_t i = 0; i < swapchain.imageCount; ++i) {
             const VkImageViewCreateInfo imageViewInfo{
                 .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
                 .pNext = nullptr,
                 .flags = 0,
-                .image = swapChainImages[i],
+                .image = swapchain.images[i],
                 .viewType = VK_IMAGE_VIEW_TYPE_2D,
                 .format = surfaceFormat.format,
                 .components = (VkComponentMapping) {},
@@ -256,8 +237,11 @@ namespace coral {
                     .layerCount = 1,
                 },
             };
-            VK_CHECK(vkCreateImageView(device, &imageViewInfo, allocator, &swapChainImageViews[i]));
+            VK_CHECK(vkCreateImageView(device, &imageViewInfo, allocator, &swapchain.imageViews[i]));
         }
+    }
+
+    void Renderer::createGraphicsPipeline() {
     }
 
 } // namespace coral

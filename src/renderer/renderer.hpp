@@ -12,6 +12,14 @@ namespace coral {
         FLAG flags = CoralRendererFlag_None;
     };
 
+    struct Swapchain {
+        VkSwapchainKHR handle;
+        VkSurfaceKHR surface;
+        uint32_t imageCount;
+        std::vector<VkImage> images;
+        std::vector<VkImageView> imageViews;
+    };
+
     class Renderer {
     public:
         void init(GLFWwindow* window);
@@ -30,24 +38,18 @@ namespace coral {
         void getQueue();
         VkSurfaceFormatKHR getSurfaceFormat();
         VkPresentModeKHR getPresentMode();
-        void createSwapchain(VkSurfaceFormatKHR surfaceFormat, VkPresentModeKHR presentMode);
-        void createImageView(VkSurfaceFormatKHR);
+        void createSwapchain(VkSurfaceFormatKHR& surfaceFormat, VkPresentModeKHR& presentMode);
+        void createImageView(VkSurfaceFormatKHR& surfaceFormat);
+        void createGraphicsPipeline();
     private:
         VkAllocationCallbacks* allocator;
         VkInstance instance;
         VkPhysicalDevice physicalDevice;
         VkDevice device;
-        VkSurfaceKHR swapchainSurface;
         uint32_t queueFamily;
         VkQueue queue;
-        VkSwapchainKHR swapchain;
-
-        uint32_t swapChainImageCount;
-        std::vector<VkImage> swapChainImages;
-        std::vector<VkImageView> swapChainImageViews;
-
-        //
-
+        
         RendererProperties properties;
+        Swapchain swapchain;
     };
 } // namespace coral

@@ -2,11 +2,6 @@
 #include <memory>
 #include <array>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <csignal>
-
 // math implementation
 
 template<typename T>

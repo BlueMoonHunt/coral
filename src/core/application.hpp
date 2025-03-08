@@ -1,10 +1,12 @@
 #pragma once
 #include "base.hpp"
-#include "renderer/renderer.hpp"
+#include <memory>
 
 struct GLFWwindow;
 
 namespace coral {
+    class Renderer;
+
     struct ApplicationProperties {
         const char* name = "";
         ivec2 layout = { 100,100 };
@@ -18,14 +20,12 @@ namespace coral {
 
         inline static Application* Get() { return s_Instance; }
         ApplicationProperties& getProperties() { return properties; }
-        Renderer& getRenderer() { return renderer; }
-
         void run();
     private:
         void initCallbacks();
     private:
         ApplicationProperties properties;
-        Renderer renderer;
+        std::shared_ptr<Renderer> renderer;
         GLFWwindow* window;
         static Application* s_Instance;
     };
