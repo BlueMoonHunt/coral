@@ -5,6 +5,21 @@
 
 struct GLFWwindow;
 
+#ifdef NDEBUG
+#define VK_CHECK(expr) {expr;}
+#else
+#define VK_CHECK(expr)\
+{\
+    VkResult result = expr;\
+    if (result != VK_SUCCESS && result != VK_INCOMPLETE)\
+    {\
+        fprintf(stderr, "Vulkan Error: %s returned %d at %s:%d\n",\
+                #expr, result, __FILE__, __LINE__);\
+        exit(EXIT_FAILURE);\
+    }\
+}
+#endif
+
 namespace coral {
 
     struct RendererProperties {
@@ -14,7 +29,6 @@ namespace coral {
 
     struct Swapchain {
         VkSwapchainKHR handle;
-        VkSurfaceKHR surface;
         uint32_t imageCount;
         std::vector<VkImage> images;
         std::vector<VkImageView> imageViews;
@@ -36,14 +50,17 @@ namespace coral {
         void selectQueueFamily();
         void createDevice();
         void getQueue();
+        
         VkSurfaceFormatKHR getSurfaceFormat();
         VkPresentModeKHR getPresentMode();
         void createSwapchain(VkSurfaceFormatKHR& surfaceFormat, VkPresentModeKHR& presentMode);
         void createImageView(VkSurfaceFormatKHR& surfaceFormat);
+
         void createGraphicsPipeline();
     private:
         VkAllocationCallbacks* allocator;
         VkInstance instance;
+        VkSurfaceKHR surface;
         VkPhysicalDevice physicalDevice;
         VkDevice device;
         uint32_t queueFamily;
@@ -51,5 +68,6 @@ namespace coral {
         
         RendererProperties properties;
         Swapchain swapchain;
+        VkPipeline graphicsPipeline;
     };
 } // namespace coral

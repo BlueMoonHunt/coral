@@ -8,21 +8,6 @@
 
 #include <GLFW/glfw3.h>
 
-#ifdef NDEBUG
-#define VK_CHECK(expr) {}
-#else
-#define VK_CHECK(expr)                                    \
-{                                                         \
-    VkResult result = expr;                               \
-    if (result != VK_SUCCESS)                             \
-    {                                                     \
-        fprintf(stderr, "Vulkan Error: %s returned %d at %s:%d\n", \
-                #expr, result, __FILE__, __LINE__);      \
-        exit(EXIT_FAILURE);                               \
-    }                                                     \
-}
-#endif
-
 namespace coral {
     void Renderer::init(GLFWwindow* window) {
         createInstance();
@@ -37,6 +22,7 @@ namespace coral {
 
         createSwapchain(surfaceFormat, presentMode);
         createImageView(surfaceFormat);
+
     }
 
     void Renderer::shutdown() {
@@ -49,12 +35,11 @@ namespace coral {
 
         vkDestroySwapchainKHR(device, swapchain.handle, allocator);
         vkDestroyDevice(device, allocator);
-        vkDestroySurfaceKHR(instance, swapchain.surface, allocator);
+        vkDestroySurfaceKHR(instance, surface, allocator);
         vkDestroyInstance(instance, allocator);
     }
 
     void Renderer::beginFrame() {
-        glfwPollEvents();
     }
 
     void Renderer::endFrame() {
@@ -89,16 +74,49 @@ namespace coral {
     }
 
     void Renderer::selectPhysicalDevice() {
-        uint32_t physicalDeviceCount = 0;
+        uint32_t physicalDeviceCount;
         VK_CHECK(vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr));
+
         std::vector<VkPhysicalDevice> physicalDevices(physicalDeviceCount);
         VK_CHECK(vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data()));
-        physicalDevice = physicalDevices[0];
+
+        // Attempt to prefer a discrete GPU
+        VkPhysicalDevice discreteGPU = VK_NULL_HANDLE;
+        VkPhysicalDevice integratedGPU = VK_NULL_HANDLE;
+
+        for (const auto& device : physicalDevices) {
+            VkPhysicalDeviceProperties deviceProperties;
+            vkGetPhysicalDeviceProperties(device, &deviceProperties);
+            if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+                discreteGPU = device;
+                break; // Prioritize the first discrete GPU found
+            }
+            else if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+                integratedGPU = device; // Keep track of an integrated GPU in case no discrete one is found
+            }
+        }
+
+        if (discreteGPU != VK_NULL_HANDLE) {
+            physicalDevice = discreteGPU;
+            CORAL_LOG("Using Discrete GPU.", LogLevel::INFO);
+        }
+        else if (integratedGPU != VK_NULL_HANDLE) {
+            physicalDevice = integratedGPU;
+            CORAL_LOG("Using Integrated GPU. No Discrete GPU found.", LogLevel::INFO);
+        }
+        else {
+            physicalDevice = physicalDevices[0]; // Fallback to the first device if neither discrete nor integrated is clearly identified
+            CORAL_LOG("Using Default GPU. No Discrete or Integrated GPU clearly identified.", LogLevel::INFO);
+        }
+
+        VkPhysicalDeviceProperties selectedDeviceProperties;
+        vkGetPhysicalDeviceProperties(physicalDevice, &selectedDeviceProperties);
     }
 
     void Renderer::createSurface(GLFWwindow* window) {
-        VK_CHECK(glfwCreateWindowSurface(instance, window, allocator, &swapchain.surface));
+        VK_CHECK(glfwCreateWindowSurface(instance, window, allocator, &surface));
     }
+
 
     void Renderer::selectQueueFamily() {
         uint32_t count;
@@ -154,10 +172,10 @@ namespace coral {
 
     VkSurfaceFormatKHR Renderer::getSurfaceFormat() {
         uint32_t formatCount;
-        VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, swapchain.surface, &formatCount, nullptr));
+        VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr));
         std::vector<VkSurfaceFormatKHR> surfaceFormats;
         surfaceFormats.resize(formatCount * sizeof(VkSurfaceFormatKHR));
-        VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, swapchain.surface, &formatCount, surfaceFormats.data()));
+        VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, surfaceFormats.data()));
 
         for (auto format : surfaceFormats)
             if (format.colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR && format.format == VK_FORMAT_B8G8R8A8_SRGB)
@@ -168,31 +186,29 @@ namespace coral {
 
     VkPresentModeKHR Renderer::getPresentMode() {
         uint32_t presentModeCount;
-        VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, swapchain.surface, &presentModeCount, nullptr));
+        VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr));
         std::vector<VkPresentModeKHR> presentModes;
         presentModes.resize(presentModeCount * sizeof(VkPresentModeKHR));
-        VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, swapchain.surface, &presentModeCount, presentModes.data()));
+        VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data()));
 
-
-        VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;;
 
         for (auto mode : presentModes)
             if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
                 return mode;
 
-        return presentMode;
+        return VK_PRESENT_MODE_FIFO_KHR;
     }
 
     void Renderer::createSwapchain(VkSurfaceFormatKHR& surfaceFormat, VkPresentModeKHR& presentMode) {
 
         VkSurfaceCapabilitiesKHR capabilities;
-        VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, swapchain.surface, &capabilities));
+        VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &capabilities));
 
         const VkSwapchainCreateInfoKHR swapchainInfo{
             .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
             .pNext = nullptr,
             .flags = 0,
-            .surface = swapchain.surface,
+            .surface = surface,
             .minImageCount = std::clamp(3u, capabilities.minImageCount, capabilities.maxImageCount),
             .imageFormat = surfaceFormat.format,
             .imageColorSpace = surfaceFormat.colorSpace,
@@ -242,6 +258,29 @@ namespace coral {
     }
 
     void Renderer::createGraphicsPipeline() {
+
+        const VkGraphicsPipelineCreateInfo graphicsPipelineInfo{
+            .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .stageCount = 0,
+            .pStages = nullptr,
+            .pVertexInputState = nullptr,
+            .pInputAssemblyState = nullptr,
+            .pTessellationState = nullptr,
+            .pViewportState = nullptr,
+            .pRasterizationState = nullptr,
+            .pMultisampleState = nullptr,
+            .pDepthStencilState = nullptr,
+            .pColorBlendState = nullptr,
+            .pDynamicState = nullptr,
+            .layout = 0,
+            .renderPass = 0,
+            .subpass = 0,
+            .basePipelineHandle = 0,
+            .basePipelineIndex = 0,
+        };
+        vkCreateGraphicsPipelines(device, nullptr, 1, &graphicsPipelineInfo, allocator, &graphicsPipeline);
     }
 
 } // namespace coral
