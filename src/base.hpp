@@ -64,11 +64,11 @@ enum CoralWindowFlag {
     CoralWindowFlag_NoBorder = 1 << 3,
 };
 
-enum CoralRendererFlag {
-    CoralRendererFlag_None = 0,
-    CoralRendererFlag_Batch = 1 << 0,
-    CoralRendererFlag_Discrete = 1 << 1,
-    CoralRendererFlag_RecreateSwapChain = 1 << 2,
+enum CoralRenderFlag {
+    CoralRenderFlag_None = 0,
+    CoralRenderFlag_Batch = 1 << 0,
+    CoralRenderFlag_Discrete = 1 << 1,
+    CoralRenderFlag_RecreateSwapChain = 1 << 2,
 };
 
 namespace coral {

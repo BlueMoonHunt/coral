@@ -1,9 +1,9 @@
 .vscode/
 
-out/
-build/
-bin/
-bin-int/
+/out/
+/build/
+/bin/
+/bin-int/
 
 
 CMakeLists.txt.user
@@ -18,3 +18,4 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 CMakeUserPresets.json
+CMakePresets.json
