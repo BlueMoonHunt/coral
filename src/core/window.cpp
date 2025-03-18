@@ -5,7 +5,7 @@
 #include <iostream>
 
 namespace coral {
-    void Window::create(ivec2 size, const char* title, FLAG windowFlags) {
+    void Window::create(i32vec2_t size, const char* title, FLAG windowFlags) {
         if (!glfwInit()) {
             std::cerr << "GLFW initialization failed!" << std::endl;
             return;
