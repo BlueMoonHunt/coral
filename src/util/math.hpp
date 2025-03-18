@@ -86,8 +86,8 @@ struct Vec3 {
     }
     Vec3 cross(const Vec3& other) const {
         return Vec3(y * other.z - z * other.y,
-                    z * other.x - x * other.z,
-                    x * other.y - y * other.x);
+            z * other.x - x * other.z,
+            x * other.y - y * other.x);
     }
     T length() const {
         return std::sqrt(x * x + y * y + z * z);
@@ -173,7 +173,7 @@ template<typename T>
 struct Mat2 {
     std::array<T, 4> data;
     Mat2() : data() {}
-    Mat2(T m00, T m01, T m10, T m11) : data({m00, m01, m10, m11}) {}
+    Mat2(T m00, T m01, T m10, T m11) : data({ m00, m01, m10, m11 }) {}
     T& operator()(size_t r, size_t c) {
         return data[r * 2 + c];
     }
@@ -225,7 +225,7 @@ struct Mat2 {
     template <typename U>
     Vec2<T> operator*(const Vec2<U>& vec) const {
         return Vec2<T>(data[0] * vec.x + data[1] * vec.y,
-                        data[2] * vec.x + data[3] * vec.y);
+            data[2] * vec.x + data[3] * vec.y);
     }
     Mat2 transpose() const {
         return Mat2(data[0], data[2], data[1], data[3]);
@@ -247,13 +247,14 @@ struct Mat2 {
     bool operator!=(const Mat2& other) const {
         return !(*this == other);
     }
+
 };
 
 template<typename T>
 struct Mat3 {
     std::array<T, 9> data;
     Mat3() : data() {}
-    Mat3(T m00, T m01, T m02, T m10, T m11, T m12, T m20, T m21, T m22) : data({m00, m01, m02, m10, m11, m12, m20, m21, m22}) {}
+    Mat3(T m00, T m01, T m02, T m10, T m11, T m12, T m20, T m21, T m22) : data({ m00, m01, m02, m10, m11, m12, m20, m21, m22 }) {}
     T& operator()(size_t r, size_t c) {
         return data[r * 3 + c];
     }
@@ -310,18 +311,18 @@ struct Mat3 {
     template <typename U>
     Vec3<T> operator*(const Vec3<U>& vec) const {
         return Vec3<T>(data[0] * vec.x + data[1] * vec.y + data[2] * vec.z,
-                        data[3] * vec.x + data[4] * vec.y + data[5] * vec.z,
-                        data[6] * vec.x + data[7] * vec.y + data[8] * vec.z);
+            data[3] * vec.x + data[4] * vec.y + data[5] * vec.z,
+            data[6] * vec.x + data[7] * vec.y + data[8] * vec.z);
     }
     Mat3 transpose() const {
         return Mat3(data[0], data[3], data[6],
-                    data[1], data[4], data[7],
-                    data[2], data[5], data[8]);
+            data[1], data[4], data[7],
+            data[2], data[5], data[8]);
     }
     T determinant() const {
         return data[0] * (data[4] * data[8] - data[5] * data[7]) -
-               data[1] * (data[3] * data[8] - data[5] * data[6]) +
-               data[2] * (data[3] * data[7] - data[4] * data[6]);
+            data[1] * (data[3] * data[8] - data[5] * data[6]) +
+            data[2] * (data[3] * data[7] - data[4] * data[6]);
     }
     Mat3 inverse() const {
         T det = determinant();
@@ -330,14 +331,14 @@ struct Mat3 {
         }
         T invDet = static_cast<T>(1) / det;
         return Mat3((data[4] * data[8] - data[5] * data[7]) * invDet,
-                    -(data[1] * data[8] - data[2] * data[7]) * invDet,
-                    (data[1] * data[5] - data[2] * data[4]) * invDet,
-                    -(data[3] * data[8] - data[5] * data[6]) * invDet,
-                    (data[0] * data[8] - data[2] * data[6]) * invDet,
-                    -(data[0] * data[5] - data[2] * data[3]) * invDet,
-                    (data[3] * data[7] - data[4] * data[6]) * invDet,
-                    -(data[0] * data[7] - data[1] * data[6]) * invDet,
-                    (data[0] * data[4] - data[1] * data[3]) * invDet);
+            -(data[1] * data[8] - data[2] * data[7]) * invDet,
+            (data[1] * data[5] - data[2] * data[4]) * invDet,
+            -(data[3] * data[8] - data[5] * data[6]) * invDet,
+            (data[0] * data[8] - data[2] * data[6]) * invDet,
+            -(data[0] * data[5] - data[2] * data[3]) * invDet,
+            (data[3] * data[7] - data[4] * data[6]) * invDet,
+            -(data[0] * data[7] - data[1] * data[6]) * invDet,
+            (data[0] * data[4] - data[1] * data[3]) * invDet);
     }
     bool operator==(const Mat3& other) const {
         return data == other.data;
@@ -345,6 +346,7 @@ struct Mat3 {
     bool operator!=(const Mat3& other) const {
         return !(*this == other);
     }
+
 };
 
 template<typename T>
@@ -352,9 +354,10 @@ struct Mat4 {
     std::array<T, 16> data;
     Mat4() : data() {}
     Mat4(T m00, T m01, T m02, T m03,
-         T m10, T m11, T m12, T m13,
-         T m20, T m21, T m22, T m23,
-         T m30, T m31, T m32, T m33) : data({m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33}) {}
+        T m10, T m11, T m12, T m13,
+        T m20, T m21, T m22, T m23,
+        T m30, T m31, T m32, T m33) : data({ m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33 }) {
+    }
     T& operator()(size_t r, size_t c) {
         return data[r * 4 + c];
     }
@@ -411,15 +414,15 @@ struct Mat4 {
     template <typename U>
     Vec4<T> operator*(const Vec4<U>& vec) const {
         return Vec4<T>(data[0] * vec.x + data[1] * vec.y + data[2] * vec.z + data[3] * vec.w,
-                        data[4] * vec.x + data[5] * vec.y + data[6] * vec.z + data[7] * vec.w,
-                        data[8] * vec.x + data[9] * vec.y + data[10] * vec.z + data[11] * vec.w,
-                        data[12] * vec.x + data[13] * vec.y + data[14] * vec.z + data[15] * vec.w);
+            data[4] * vec.x + data[5] * vec.y + data[6] * vec.z + data[7] * vec.w,
+            data[8] * vec.x + data[9] * vec.y + data[10] * vec.z + data[11] * vec.w,
+            data[12] * vec.x + data[13] * vec.y + data[14] * vec.z + data[15] * vec.w);
     }
     Mat4 transpose() const {
-        return Mat4(data[0], data[4], data[8],  data[12],
-                    data[1], data[5], data[9],  data[13],
-                    data[2], data[6], data[10], data[14],
-                    data[3], data[7], data[11], data[15]);
+        return Mat4(data[0], data[4], data[8], data[12],
+            data[1], data[5], data[9], data[13],
+            data[2], data[6], data[10], data[14],
+            data[3], data[7], data[11], data[15]);
     }
     T determinant() const {
         T det = static_cast<T>(0);
@@ -437,7 +440,7 @@ struct Mat4 {
                 sub_r++;
             }
             return submatrix;
-        };
+            };
         det += data[0] * get_submatrix(0).determinant();
         det -= data[1] * get_submatrix(1).determinant();
         det += data[2] * get_submatrix(2).determinant();
@@ -468,7 +471,7 @@ struct Mat4 {
             }
             T det_sub = submatrix.determinant();
             return ((r + c) % 2 == 0) ? det_sub : -det_sub;
-        };
+            };
         for (size_t i = 0; i < 4; ++i) {
             for (size_t j = 0; j < 4; ++j) {
                 adjugate(j, i) = cofactor(i, j);
@@ -548,23 +551,23 @@ std::ostream& operator<<(std::ostream& os, const Vec4<T>& v) {
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const Mat2<T>& m) {
     os << m(0, 0) << " " << m(0, 1) << "\n"
-       << m(1, 0) << " " << m(1, 1);
+        << m(1, 0) << " " << m(1, 1);
     return os;
 }
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const Mat3<T>& m) {
     os << m(0, 0) << " " << m(0, 1) << " " << m(0, 2) << "\n"
-       << m(1, 0) << " " << m(1, 1) << " " << m(1, 2) << "\n"
-       << m(2, 0) << " " << m(2, 1) << " " << m(2, 2);
+        << m(1, 0) << " " << m(1, 1) << " " << m(1, 2) << "\n"
+        << m(2, 0) << " " << m(2, 1) << " " << m(2, 2);
     return os;
 }
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const Mat4<T>& m) {
     os << m(0, 0) << " " << m(0, 1) << " " << m(0, 2) << " " << m(0, 3) << "\n"
-       << m(1, 0) << " " << m(1, 1) << " " << m(1, 2) << " " << m(1, 3) << "\n"
-       << m(2, 0) << " " << m(2, 1) << " " << m(2, 2) << " " << m(2, 3) << "\n"
-       << m(3, 0) << " " << m(3, 1) << " " << m(3, 2) << " " << m(3, 3);
+        << m(1, 0) << " " << m(1, 1) << " " << m(1, 2) << " " << m(1, 3) << "\n"
+        << m(2, 0) << " " << m(2, 1) << " " << m(2, 2) << " " << m(2, 3) << "\n"
+        << m(3, 0) << " " << m(3, 1) << " " << m(3, 2) << " " << m(3, 3);
     return os;
 }
