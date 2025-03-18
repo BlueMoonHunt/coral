@@ -1,7 +1,9 @@
 #pragma once
 #include "base.hpp"
 #include <memory>
+#include <queue>
 #include "window.hpp"
+#include "event/event.hpp"
 
 struct GLFWwindow;
 
@@ -10,8 +12,9 @@ namespace coral {
 
     struct ApplicationSpecifications {
         const char* name = "CORAL APP";
-        ivec2 windowsize = { 100,100 };
+        i32vec2_t windowsize = { 100,100 };
         FLAG windowFlags = CoralWindowFlag_None;
+        bool running = false;
     };
 
     class Application {
@@ -24,11 +27,13 @@ namespace coral {
         Window getWindow() { return window; }
         void run();
     private:
+        void onEvent(Ref<Event> e);
         void initCallbacks();
     private:
         static Application* s_Instance;
         ApplicationSpecifications specs;
         Window window;
-        std::shared_ptr<Renderer> renderer;
+        Ref<Renderer> renderer;
+        std::queue<Ref<Event>> eventQueue;
     };
 } // namespace coral
