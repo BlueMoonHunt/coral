@@ -39,7 +39,7 @@ const char* getLogLevelName(LogLevel level);
     LogLevel level = logLevel;\
     std::println("{}: {}", getLogLevelName(level), expr, __FILE__, __LINE__);\
     if(level == LogLevel::FETAL)\
-    exit(EXIT_FAILURE);\
+        exit(EXIT_FAILURE);\
 }
 #endif
 
@@ -121,7 +121,7 @@ enum CoralEventFlag {
     CoralEventFlag_KeyReleased = 1 << 5,
     CoralEventFlag_KeyTyped = 1 << 6,
     CoralEventFlag_KeyRepeat = 1 << 7,
-    
+
     CoralEventFlag_MouseButtonPressed = 1 << 8,
     CoralEventFlag_MouseButtonReleased = 1 << 9,
     CoralEventFlag_MouseMove = 1 << 10,
