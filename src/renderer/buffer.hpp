@@ -105,7 +105,13 @@ namespace coral {
         uint32_t m_Stride = 0;
     };
 
-    struct VertexData;
+    struct VertexData {
+        vec3_t position;
+        vec4_t color = vec4_t{1.0f,1.0f,1.0f,1.0f};
+        vec2_t texCoord;
+        float texIndex = 0.0f;
+        float tilingFactor = 1.0f;
+    };
 
     class IndexBuffer {
     public:
