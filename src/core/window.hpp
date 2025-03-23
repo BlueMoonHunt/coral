@@ -11,6 +11,6 @@ namespace coral {
         bool shouldClose();
         GLFWwindow* getNativeWindow();
     private:
-        GLFWwindow* window;
+        GLFWwindow* m_Window;
     };
 } // namespace coral

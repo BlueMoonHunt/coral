@@ -10,12 +10,12 @@ namespace coral {
         else if (type == "fragment_Shader" || type == "pixel_Shader")
             return GL_FRAGMENT_SHADER;
 
-        CORAL_LOG("Unknown shader type", LogLevel::FETAL);
+        BMH_ASSERT(false, "Unknown shader type");
         return 0;
     }
 
-    Shader::Shader(const std::string& _name, const std::string& vertexShaderSource, const std::string& fragmentShaderSource)
-        : name(_name) {
+    Shader::Shader(const std::string& name, const std::string& vertexShaderSource, const std::string& fragmentShaderSource)
+        : m_Name(name) {
         std::unordered_map<GLenum, std::string> shaderSource;
         shaderSource[GL_VERTEX_SHADER] = vertexShaderSource;
         shaderSource[GL_FRAGMENT_SHADER] = fragmentShaderSource;
@@ -23,47 +23,47 @@ namespace coral {
     }
 
     Shader::~Shader() {
-        glDeleteShader(rendererID);
+        glDeleteShader(m_RendererID);
     }
 
     void Shader::bind() const {
-        glUseProgram(rendererID);
+        glUseProgram(m_RendererID);
     }
 
     void Shader::unbind() const {
         glUseProgram(0);
     }
 
-    void Shader::setInt(const std::string& _name, int value) {
-        glUniform1i(getUniformLocation(_name), value);
+    void Shader::setInt(const std::string& name, int value) {
+        glUniform1i(getUniformLocation(name), value);
     }
 
-    void Shader::setIntArray(const std::string& _name, int* values, uint32_t count) {
-        glUniform1iv(getUniformLocation(_name), count, values);
+    void Shader::setIntArray(const std::string& name, int* values, uint32_t count) {
+        glUniform1iv(getUniformLocation(name), count, values);
     }
 
-    void Shader::setFloat(const std::string& _name, float value) {
-        glUniform1f(getUniformLocation(_name), value);
+    void Shader::setFloat(const std::string& name, float value) {
+        glUniform1f(getUniformLocation(name), value);
     }
 
-    void Shader::setFloat2(const std::string& _name, const vec2_t& value) {
-        glUniform2f(getUniformLocation(_name), value.x, value.y);
+    void Shader::setFloat2(const std::string& name, const vec2_t& value) {
+        glUniform2f(getUniformLocation(name), value.x, value.y);
     }
 
-    void Shader::setFloat3(const std::string& _name, const vec3_t& value) {
-        glUniform3f(getUniformLocation(_name), value.x, value.y, value.z);
+    void Shader::setFloat3(const std::string& name, const vec3_t& value) {
+        glUniform3f(getUniformLocation(name), value.x, value.y, value.z);
     }
 
-    void Shader::setFloat4(const std::string& _name, const vec4_t& value) {
-        glUniform4f(getUniformLocation(_name), value.x, value.y, value.z, value.w);
+    void Shader::setFloat4(const std::string& name, const vec4_t& value) {
+        glUniform4f(getUniformLocation(name), value.x, value.y, value.z, value.w);
     }
 
-    void Shader::setMat3(const std::string& _name, const mat3_t& value) {
-        glUniformMatrix3fv(getUniformLocation(_name), 1, GL_FALSE, value.data.data());
+    void Shader::setMat3(const std::string& name, const mat3_t& value) {
+        glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, value.data.data());
     }
 
-    void Shader::setMat4(const std::string& _name, const mat4_t& value) {
-        glUniformMatrix4fv(getUniformLocation(_name), 1, GL_FALSE, value.data.data());
+    void Shader::setMat4(const std::string& name, const mat4_t& value) {
+        glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, value.data.data());
     }
 
 
@@ -89,8 +89,8 @@ namespace coral {
                 glGetShaderInfoLog(shader, length, &length, message);
                 glDeleteShader(shader);
 
-                CORAL_LOG(message, LogLevel::ERROR);
-                CORAL_LOG("shader compilation failure", LogLevel::FETAL);
+                BMH_ERROR(message);
+                BMH_ASSERT(false, "shader compilation failure");
                 return;
             }
             glAttachShader(program, shader);
@@ -119,16 +119,16 @@ namespace coral {
             glDetachShader(program, id);
         }
 
-        rendererID = program;
+        m_RendererID = program;
     }
 
-    int32_t Shader::getUniformLocation(const std::string& _name) {
-        if (uniformLocationCache.find(_name) != uniformLocationCache.end())
-            return uniformLocationCache[_name];
-        int32_t location = glGetUniformLocation(rendererID, _name.c_str());
+    int32_t Shader::getUniformLocation(const std::string& name) {
+        if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
+            return m_UniformLocationCache[name];
+        int32_t location = glGetUniformLocation(m_RendererID, name.c_str());
         if (location == -1)
-            std::println("Warning: Uniform {} doesn't exist", _name);
-        uniformLocationCache[_name] = location;
+            std::println("Warning: Uniform {} doesn't exist", name);
+        m_UniformLocationCache[name] = location;
         return location;
     }
 

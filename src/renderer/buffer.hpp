@@ -32,7 +32,7 @@ namespace coral {
         case ShaderDataType::Byte:     return 1;
         }
 
-        CORAL_LOG("Unknown ShaderDataType!", LogLevel::FETAL);
+        BMH_ASSERT(false, "Unknown ShaderDataType!");
         return 0;
     }
 
@@ -70,7 +70,7 @@ namespace coral {
             case ShaderDataType::Byte:    return 1;
             }
 
-            CORAL_LOG("Unknown ShaderDataType!", LogLevel::FETAL);
+            BMH_ASSERT(false, "Unknown ShaderDataType!");
             return 0;
         }
     };
@@ -107,7 +107,7 @@ namespace coral {
 
     struct VertexData {
         vec3_t position;
-        vec4_t color = vec4_t{1.0f,1.0f,1.0f,1.0f};
+        vec4_t color = vec4_t{ 1.0f,1.0f,1.0f,1.0f };
         vec2_t texCoord;
         float texIndex = 0.0f;
         float tilingFactor = 1.0f;
@@ -120,8 +120,8 @@ namespace coral {
         uint32_t GetCount() const;
         uint32_t getID() const;
     private:
-        uint32_t count;
-        uint32_t id;
+        uint32_t m_Count;
+        uint32_t m_ID;
     };
 
 
@@ -141,9 +141,9 @@ namespace coral {
         uint32_t getID() const;
 
     private:
-        uint32_t vertexBufferID;
-        uint32_t vertexArrayID;
-        BufferLayout bufferLayout;
-        Ref<IndexBuffer> indexBuffer;
+        uint32_t m_VertexBufferID;
+        uint32_t m_VertexArrayID;
+        BufferLayout m_BufferLayout;
+        Ref<IndexBuffer> m_IndexBuffer;
     };
 } // namespace coral

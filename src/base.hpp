@@ -27,7 +27,6 @@ constexpr Scope<T> CreateScope(Args&& ... args) {
 
 //////////////////
 
-
 enum class LogLevel {
     INFO = 0,
     TRACE,
@@ -39,16 +38,42 @@ enum class LogLevel {
 const char* getLogLevelName(LogLevel level);
 
 #ifdef NDEBUG
-#define CORAL_LOG(expr, logLevel) {expr;}
+#define BMH_ASSERT(expr, message)
+#define BMH_LOG(expr, logLevel)
+#define BMH_INFO(expr)
+#define BMH_TRACE(expr)
+#define BMH_WARNING(expr)
+#define BMH_ERROR(expr)
 #else
-#define CORAL_LOG(expr, logLevel) {\
+#include <iostream>
+#include <cstdlib>
+#include <print>
+
+#define BMH_ASSERT(expr, message) {\
+    if(!(expr)) {\
+        std::println(std::cerr, "{}: {} at {}:{}", getLogLevelName(LogLevel::FETAL), message, __FILE__, __LINE__);\
+        std::exit(EXIT_FAILURE);\
+    }\
+}
+#define BMH_LOG(expr, logLevel) {\
     LogLevel level = logLevel;\
-    std::println("{}: {}", getLogLevelName(level), expr, __FILE__, __LINE__);\
+    std::println("{}: {} at {}:{}", getLogLevelName(level), expr, __FILE__, __LINE__);\
     if(level == LogLevel::FETAL)\
-        exit(EXIT_FAILURE);\
+        std::exit(EXIT_FAILURE);\
+}
+#define BMH_INFO(expr) {\
+    BMH_LOG(expr, LogLevel::INFO);\
+}
+#define BMH_TRACE(expr) {\
+    BMH_LOG(expr, LogLevel::TRACE);\
+}
+#define BMH_WARNING(expr) {\
+    BMH_LOG(expr, LogLevel::WARNING);\
+}
+#define BMH_ERROR(expr) {\
+    BMH_LOG(expr, LogLevel::ERROR);\
 }
 #endif
-
 
 ///////////////////////
 

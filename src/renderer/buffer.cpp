@@ -23,7 +23,7 @@ namespace coral {
         case coral::ShaderDataType::Byte:         return GL_BYTE;
         }
 
-        CORAL_LOG("Unknown ShaderDataType", LogLevel::FETAL);
+        BMH_ASSERT(false, "Unknown ShaderDataType");
         return 0;
     }
 
@@ -33,68 +33,68 @@ namespace coral {
 
 
     VertexBuffer::VertexBuffer(std::vector<VertexData>& vertices) {
-        glCreateVertexArrays(1, &vertexArrayID);
+        glCreateVertexArrays(1, &m_VertexArrayID);
 
-        glCreateBuffers(1, &vertexBufferID);
-        glNamedBufferData(vertexBufferID, vertices.size(), vertices.data(), GL_STATIC_DRAW);
+        glCreateBuffers(1, &m_VertexBufferID);
+        glNamedBufferData(m_VertexBufferID, vertices.size(), vertices.data(), GL_STATIC_DRAW);
     }
 
     VertexBuffer::VertexBuffer(float* data, uint32_t size) {
-        glCreateVertexArrays(1, &vertexArrayID);
+        glCreateVertexArrays(1, &m_VertexArrayID);
 
-        glCreateBuffers(1, &vertexBufferID);
-        glNamedBufferData(vertexBufferID, size, data, GL_STATIC_DRAW);
+        glCreateBuffers(1, &m_VertexBufferID);
+        glNamedBufferData(m_VertexBufferID, size, data, GL_STATIC_DRAW);
     }
 
     VertexBuffer::VertexBuffer(uint32_t size) {
-        glCreateVertexArrays(1, &vertexArrayID);
+        glCreateVertexArrays(1, &m_VertexArrayID);
 
-        glCreateBuffers(1, &vertexBufferID);
-        glNamedBufferData(vertexBufferID, size, nullptr, GL_DYNAMIC_DRAW);
+        glCreateBuffers(1, &m_VertexBufferID);
+        glNamedBufferData(m_VertexBufferID, size, nullptr, GL_DYNAMIC_DRAW);
     }
 
     VertexBuffer::~VertexBuffer() {
-        glDeleteVertexArrays(1, &vertexArrayID);
-        glDeleteBuffers(1, &vertexBufferID);
+        glDeleteVertexArrays(1, &m_VertexArrayID);
+        glDeleteBuffers(1, &m_VertexBufferID);
     }
 
     void VertexBuffer::setData(const void* data, uint32_t size) {
-        glNamedBufferSubData(vertexBufferID, 0, size, data);
+        glNamedBufferSubData(m_VertexBufferID, 0, size, data);
     }
 
     void VertexBuffer::setIndexBuffer(Ref<IndexBuffer>& buffer) {
-        glVertexArrayElementBuffer(vertexArrayID, buffer->getID());
-        indexBuffer = buffer;
+        glVertexArrayElementBuffer(m_VertexArrayID, buffer->getID());
+        m_IndexBuffer = buffer;
     }
 
     const Ref<IndexBuffer>& VertexBuffer::getIndexBuffer() const {
-        return indexBuffer;
+        return m_IndexBuffer;
     }
 
     const BufferLayout& VertexBuffer::getLayout() const {
-        return bufferLayout;
+        return m_BufferLayout;
     }
 
     void VertexBuffer::setLayout(const BufferLayout& layout) {
-        bufferLayout = layout;
+        m_BufferLayout = layout;
 
-        if (!bufferLayout.getElements().size())
-            CORAL_LOG("Vertex Buffer has no layout", LogLevel::FETAL);
+        if (!m_BufferLayout.getElements().size())
+        BMH_ASSERT(false, "Vertex Buffer has no layout");
 
         uint32_t index = 0;
-        for (const auto& element : bufferLayout) {
-            glEnableVertexArrayAttrib(vertexArrayID, index);
-            glVertexArrayAttribBinding(vertexArrayID, index, 0);
-            glVertexArrayAttribFormat(vertexArrayID, index, element.GetComponentCount(),
+        for (const auto& element : m_BufferLayout) {
+            glEnableVertexArrayAttrib(m_VertexArrayID, index);
+            glVertexArrayAttribBinding(m_VertexArrayID, index, 0);
+            glVertexArrayAttribFormat(m_VertexArrayID, index, element.GetComponentCount(),
                 ShaderDataTypeToOpenGLBaseType(element.Type),
                 element.Normalized ? GL_TRUE : GL_FALSE, element.Offset);
-            glVertexArrayVertexBuffer(vertexArrayID, index, vertexBufferID, element.Offset, bufferLayout.getStride());
+            glVertexArrayVertexBuffer(m_VertexArrayID, index, m_VertexBufferID, element.Offset, m_BufferLayout.getStride());
             index++;
         }
     }
 
     uint32_t VertexBuffer::getID() const {
-        return vertexArrayID;
+        return m_VertexArrayID;
     }
 
     //////////////////////////////////////////
@@ -102,21 +102,21 @@ namespace coral {
     //////////////////////////////////////////
 
     IndexBuffer::IndexBuffer(uint32_t* data, uint32_t count)
-        : count(count) {
-            glCreateBuffers(1, &id);
-            glNamedBufferData(id, count * sizeof(uint32_t), data, GL_STATIC_DRAW);
+        : m_Count(count) {
+            glCreateBuffers(1, &m_ID);
+            glNamedBufferData(m_ID, count * sizeof(uint32_t), data, GL_STATIC_DRAW);
     }
 
     IndexBuffer::~IndexBuffer() {
-        glDeleteBuffers(1, &id);
+        glDeleteBuffers(1, &m_ID);
     }
 
     uint32_t IndexBuffer::GetCount() const {
-        return count;
+        return m_Count;
     }
 
     uint32_t IndexBuffer::getID() const {
-        return id;
+        return m_ID;
     }
 
 } // namespace coral

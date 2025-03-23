@@ -9,6 +9,7 @@ template<typename T>
 struct Vec2 {
     T x, y;
     Vec2() : x(), y() {}
+    Vec2(T _x) : x(_x), y(_x) {}
     Vec2(T _x, T _y) : x(_x), y(_y) {}
     Vec2 operator+(const Vec2& other) const {
         return Vec2(x + other.x, y + other.y);
@@ -62,6 +63,7 @@ template<typename T>
 struct Vec3 {
     T x, y, z;
     Vec3() : x(), y(), z() {}
+    Vec3(T _x) : x(_x), y(_x), z(_x) {}
     Vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
     Vec3 operator+(const Vec3& other) const {
         return Vec3(x + other.x, y + other.y, z + other.z);
@@ -120,6 +122,7 @@ template<typename T>
 struct Vec4 {
     T x, y, z, w;
     Vec4() : x(), y(), z(), w() {}
+    Vec4(T _x) : x(_x), y(_x), z(_x), w(_x) {}
     Vec4(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w) {}
     Vec4 operator+(const Vec4& other) const {
         return Vec4(x + other.x, y + other.y, z + other.z, w + other.w);
@@ -172,7 +175,8 @@ struct Vec4 {
 template<typename T>
 struct Mat2 {
     std::array<T, 4> data;
-    Mat2() : data() {}
+    Mat2() : data() {};
+    Mat2(int value = 0.0f) { data.fill(value); }
     Mat2(T m00, T m01, T m10, T m11) : data({ m00, m01, m10, m11 }) {}
     T& operator()(size_t r, size_t c) {
         return data[r * 2 + c];
@@ -253,7 +257,8 @@ struct Mat2 {
 template<typename T>
 struct Mat3 {
     std::array<T, 9> data;
-    Mat3() : data() {}
+    Mat3() : data() {};
+    Mat3(int value = 0.0f) { data.fill(value); }
     Mat3(T m00, T m01, T m02, T m10, T m11, T m12, T m20, T m21, T m22) : data({ m00, m01, m02, m10, m11, m12, m20, m21, m22 }) {}
     T& operator()(size_t r, size_t c) {
         return data[r * 3 + c];
@@ -352,7 +357,8 @@ struct Mat3 {
 template<typename T>
 struct Mat4 {
     std::array<T, 16> data;
-    Mat4() : data() {}
+    Mat4() : data() {};
+    Mat4(int value = 0.0f) { data.fill(value); }
     Mat4(T m00, T m01, T m02, T m03,
         T m10, T m11, T m12, T m13,
         T m20, T m21, T m22, T m23,
@@ -510,6 +516,9 @@ using i16vec4_t = Vec4<int16_t>;
 using i32vec2_t = Vec2<int32_t>;
 using i32vec3_t = Vec3<int32_t>;
 using i32vec4_t = Vec4<int32_t>;
+using ivec2_t = Vec2<int32_t>;
+using ivec3_t = Vec3<int32_t>;
+using ivec4_t = Vec4<int32_t>;
 using ssvec2_t = Vec2<ssize_t>;
 using ssvec3_t = Vec3<ssize_t>;
 using ssvec4_t = Vec4<ssize_t>;
@@ -523,6 +532,9 @@ using u16vec4_t = Vec4<uint16_t>;
 using u32vec2_t = Vec2<uint32_t>;
 using u32vec3_t = Vec3<uint32_t>;
 using u32vec4_t = Vec4<uint32_t>;
+using uvec2_t = Vec2<uint32_t>;
+using uvec3_t = Vec3<uint32_t>;
+using uvec4_t = Vec4<uint32_t>;
 using svec2_t = Vec2<size_t>;
 using svec3_t = Vec3<size_t>;
 using svec4_t = Vec4<size_t>;

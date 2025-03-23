@@ -23,17 +23,17 @@ namespace coral {
         ~Application();
 
         inline static Application* Get() { return s_Instance; }
-        ApplicationSpecifications& getProperties() { return specs; }
-        Window getWindow() { return window; }
+        ApplicationSpecifications& getProperties() { return m_Specs; }
+        Window getWindow() { return m_Window; }
         void run();
     private:
         void onEvent(Ref<Event> e);
         void initCallbacks();
     private:
         static Application* s_Instance;
-        ApplicationSpecifications specs;
-        Window window;
-        Ref<Renderer> renderer;
-        std::queue<Ref<Event>> eventQueue;
+        ApplicationSpecifications m_Specs;
+        Window m_Window;
+        Ref<Renderer> m_Renderer;
+        std::queue<Ref<Event>> m_EventQueue;
     };
 } // namespace coral

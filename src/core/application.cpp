@@ -9,44 +9,44 @@ namespace coral {
     Application* Application::s_Instance = nullptr;
 
     Application::Application(const ApplicationSpecifications& specifications)
-        : specs(specifications) {
+        : m_Specs(specifications) {
         s_Instance = this;
 
-        window.create(specs.windowsize, specs.name, specs.windowFlags);
+        m_Window.create(m_Specs.windowsize, m_Specs.name, m_Specs.windowFlags);
 
-        renderer = std::make_shared<Renderer>();
-        // renderer->init(window.getNativeWindow());
+        m_Renderer = std::make_shared<Renderer>();
+        // m_Renderer->init(m_Window.getNativeWindow());
         initCallbacks();
     }
 
     Application::~Application() {
-        window.destroy();
-        // renderer->shutdown();
+        m_Window.destroy();
+        // m_Renderer->shutdown();
         glfwTerminate();
     }
 
     void Application::run() {
 
-        specs.running = true;
+        m_Specs.running = true;
 
-        while (!glfwWindowShouldClose(window.getNativeWindow()) && specs.running) {
+        while (!glfwWindowShouldClose(m_Window.getNativeWindow()) && m_Specs.running) {
             glfwPollEvents();
 
-            while (!eventQueue.empty()) {
-                auto e = eventQueue.front();
-                eventQueue.pop();
+            while (!m_EventQueue.empty()) {
+                auto e = m_EventQueue.front();
+                m_EventQueue.pop();
                 onEvent(e);
             }
 
             glClearColor(0.38f, 0.3f, 0.6f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glfwSwapBuffers(window.getNativeWindow());
+            glfwSwapBuffers(m_Window.getNativeWindow());
 
 
-            renderer->beginFrame();
+            m_Renderer->beginFrame();
 
-            renderer->endFrame();
+            m_Renderer->endFrame();
         }
     }
 
@@ -55,51 +55,51 @@ namespace coral {
         if (e->flag & CoralEventFlag_WindowResize) {
             auto event = std::dynamic_pointer_cast<WindowResizeEvent>(e);
             if (event)
-                specs.windowsize = event->getSize();
+                m_Specs.windowsize = event->getSize();
         }
     }
 
     void Application::initCallbacks() {
-        GLFWwindow* windowHandle = window.getNativeWindow();
+        GLFWwindow* windowHandle = m_Window.getNativeWindow();
         glfwSetErrorCallback([](int error, const char* description) {
             fprintf(stderr, "GLFW Error %d: %s\n", error, description);
             });
 
-        glfwSetWindowSizeCallback(windowHandle, [](GLFWwindow* window, int width, int height) {
-            const i32vec2_t windowSize = s_Instance->specs.windowsize;
+        glfwSetWindowSizeCallback(windowHandle, [](GLFWwindow* m_Window, int width, int height) {
+            const i32vec2_t windowSize = s_Instance->m_Specs.windowsize;
             if (windowSize.x != width, windowSize.y != height)
-                s_Instance->eventQueue.emplace(CreateRef<WindowResizeEvent>(width, height));
+                s_Instance->m_EventQueue.emplace(CreateRef<WindowResizeEvent>(width, height));
             });
 
-        glfwSetKeyCallback(windowHandle, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+        glfwSetKeyCallback(windowHandle, [](GLFWwindow* m_Window, int key, int scancode, int action, int mods) {
             switch (action) {
-            case GLFW_PRESS: s_Instance->eventQueue.emplace(CreateRef<KeyPressedEvent>((KeyCode)key, false)); break;
-            case GLFW_RELEASE: s_Instance->eventQueue.emplace(CreateRef<KeyReleasedEvent>((KeyCode)key)); break;
-            case GLFW_REPEAT: s_Instance->eventQueue.emplace(CreateRef<KeyPressedEvent>((KeyCode)key, true)); break;
+            case GLFW_PRESS: s_Instance->m_EventQueue.emplace(CreateRef<KeyPressedEvent>((KeyCode)key, false)); break;
+            case GLFW_RELEASE: s_Instance->m_EventQueue.emplace(CreateRef<KeyReleasedEvent>((KeyCode)key)); break;
+            case GLFW_REPEAT: s_Instance->m_EventQueue.emplace(CreateRef<KeyPressedEvent>((KeyCode)key, true)); break;
             }
             });
 
-        glfwSetWindowCloseCallback(windowHandle, [](GLFWwindow* window) {
-            s_Instance->eventQueue.push(CreateRef<WindowCloseEvent>());
+        glfwSetWindowCloseCallback(windowHandle, [](GLFWwindow* m_Window) {
+            s_Instance->m_EventQueue.push(CreateRef<WindowCloseEvent>());
             });
 
-        glfwSetCharCallback(windowHandle, [](GLFWwindow* window, uint32_t keycode) {
-            s_Instance->eventQueue.emplace(CreateRef<KeyTypedEvent>((KeyCode)keycode));
+        glfwSetCharCallback(windowHandle, [](GLFWwindow* m_Window, uint32_t keycode) {
+            s_Instance->m_EventQueue.emplace(CreateRef<KeyTypedEvent>((KeyCode)keycode));
             });
 
-        glfwSetMouseButtonCallback(windowHandle, [](GLFWwindow* window, int button, int action, int modes) {
+        glfwSetMouseButtonCallback(windowHandle, [](GLFWwindow* m_Window, int button, int action, int modes) {
             switch (action) {
-            case GLFW_PRESS:    s_Instance->eventQueue.push(CreateRef<MouseButtonPressedEvent>((MouseButton)button)); break;
-            case GLFW_RELEASE:  s_Instance->eventQueue.push(CreateRef<MouseButtonReleasedEvent>((MouseButton)button)); break;
+            case GLFW_PRESS:    s_Instance->m_EventQueue.push(CreateRef<MouseButtonPressedEvent>((MouseButton)button)); break;
+            case GLFW_RELEASE:  s_Instance->m_EventQueue.push(CreateRef<MouseButtonReleasedEvent>((MouseButton)button)); break;
             }
             });
 
-        glfwSetScrollCallback(windowHandle, [](GLFWwindow* window, double xOffset, double yOffset) {
-            s_Instance->eventQueue.push(CreateRef<MouseScrolledEvent>((float)xOffset, (float)yOffset));
+        glfwSetScrollCallback(windowHandle, [](GLFWwindow* m_Window, double xOffset, double yOffset) {
+            s_Instance->m_EventQueue.push(CreateRef<MouseScrolledEvent>((float)xOffset, (float)yOffset));
             });
 
-        glfwSetCursorPosCallback(windowHandle, [](GLFWwindow* window, double xPos, double yPos) {
-            s_Instance->eventQueue.push(CreateRef<MouseMovedEvent>(xPos, yPos));
+        glfwSetCursorPosCallback(windowHandle, [](GLFWwindow* m_Window, double xPos, double yPos) {
+            s_Instance->m_EventQueue.push(CreateRef<MouseMovedEvent>(xPos, yPos));
             });
     }
 }

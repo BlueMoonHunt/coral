@@ -23,37 +23,37 @@ namespace coral {
             size = { mode->width, mode->height };
         }
 
-        window = glfwCreateWindow(size.x, size.y, title, nullptr, nullptr);
-        glfwMakeContextCurrent(window);
+        m_Window = glfwCreateWindow(size.x, size.y, title, nullptr, nullptr);
+        glfwMakeContextCurrent(m_Window);
 
-        // Initialize glad after window creation
+        // Initialize glad after m_Window creation
         gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
         const char* description;
         glfwGetError(&description);
 
-        if (!window) {
-            std::cerr << "GLFW window creation failed!\n" << description << std::endl;
+        if (!m_Window) {
+            std::cerr << "GLFW m_Window creation failed!\n" << description << std::endl;
             glfwTerminate();
             return;
         }
 
         if (windowFlags & CoralWindowFlag_Iconified)
-            glfwIconifyWindow(window);
+            glfwIconifyWindow(m_Window);
 
         glfwSwapInterval(1);
     }
 
     void Window::destroy() {
-        glfwDestroyWindow(window);
+        glfwDestroyWindow(m_Window);
     }
 
     bool Window::shouldClose() {
-        return glfwWindowShouldClose(window);
+        return glfwWindowShouldClose(m_Window);
     }
 
     GLFWwindow* Window::getNativeWindow() {
-        return window;
+        return m_Window;
     }
 
 

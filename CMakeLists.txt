@@ -39,6 +39,8 @@ add_subdirectory(${VENDOR_DIR}/glad)
 set(GLAD_INCLUDE_DIR ${VENDOR_DIR}/glad/include)
 set(GLAD_LIBRARY glad)
 
+add_subdirectory(vendor/stb_image)
+
 # Source files
 file(GLOB_RECURSE SRC_FILES
 src/*.cpp
@@ -52,6 +54,7 @@ target_include_directories(${PROJECT_NAME}
 PUBLIC src
 PRIVATE ${GLFW_INCLUDE_DIR}
 PRIVATE ${GLAD_INCLUDE_DIR}
+PRIVATE ${VENDOR_DIR}/stb_image
 )
 
 # Link libraries
@@ -60,6 +63,7 @@ PRIVATE
 ${GLFW_LIBRARY}
 ${GLAD_LIBRARY}
 OpenGL::OpenGL
+stb_image
 )
 
 # Compiler features and definitions
